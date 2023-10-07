@@ -7,7 +7,7 @@ from torchvision.datasets.utils import download_url, extract_archive
 class GTSRBTrafficSigns(Dataset):
   """ GTSRB data set """
 
-  def __init__(self, root = './', url = 'https://sid.erda.dk/share_redirect/EB0rrpZwuI', filename='EB0rrpZwuI.zip', train=True, force_download=False, crop_size=28): 
+  def __init__(self, root = './', url = 'https://sid.erda.dk/share_redirect/EB0rrpZwuI', filename='EB0rrpZwuI.zip', train=True, force_download=False, crop_size=28, rotation=False): 
     """
     Parameters:
     root: str
@@ -27,14 +27,15 @@ class GTSRBTrafficSigns(Dataset):
     self.img_width   = self.img_height
     self.img_height_crop = crop_size  
     self.img_width_crop  = self.img_height_crop
+    self.rotation = rotation # HC: added
 
     self.train = train
     archive = os.path.join(root, filename)
 
-    if self.train:
-      self.data_folder = os.path.join(root, 'GTSRB/train')
-    else:
-      self.data_folder = os.path.join(root, 'GTSRB/test')
+    # HC: changed
+    folder_type = 'train' if self.train else 'test'
+    rotation_suffix = '_rotated' if self.rotation else ''
+    self.data_folder = os.path.join(root, f'GTSRB/{folder_type}{rotation_suffix}')
 
     if (not os.path.exists(self.data_folder)) or force_download:
       download_url(url, root, filename)
@@ -53,6 +54,8 @@ class GTSRBTrafficSigns(Dataset):
         image = transforms.RandomAffine((-5,5))(image)
         image = transforms.RandomCrop((self.img_width_crop, self.img_height_crop))(image)
         image = transforms.ColorJitter(0.8, contrast = 0.4)(image)
+        if self.rotation: # HC: added
+          image = transforms.RandomRotation(15)(image)
         if label in [11, 12, 13, 17, 18, 26, 30, 35]:
           image = transforms.RandomHorizontalFlip(p=0.5)(image)
       else:

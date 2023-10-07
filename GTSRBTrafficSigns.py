@@ -49,7 +49,6 @@ class GTSRBTrafficSigns(Dataset):
       image, label = self.dataset_train.__getitem__(index)
       image = transforms.Resize((self.img_width,self.img_height))(image)
       
-      # These transformations just serve as examples
       if self.train:
         image = transforms.RandomAffine((-5,5))(image)
         image = transforms.RandomCrop((self.img_width_crop, self.img_height_crop))(image)
